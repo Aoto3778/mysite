@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ja" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>英字幕リーダー</title>
+<meta name="description" content="スクリーンショットから英語字幕だけをオフラインで読み取るアプリ">
+<meta name="theme-color" content="#0d0d10">
+
+<!-- PWA / iPad ホーム画面アプリ -->
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="英字幕リーダー">
+
+<!-- テーマのちらつき防止: モジュール読み込み前に保存済み設定を反映 -->
+<script>
+try {
+  var s = JSON.parse(localStorage.getItem("engsub-reader-settings-v1"));
+  if (s) {
+    document.documentElement.setAttribute("data-theme", s.theme === "light" ? "light" : "dark");
+    if (s.accent) document.documentElement.style.setProperty("--accent", s.accent);
+  }
+} catch (e) {}
+</script>
+
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<div id="root"></div>
+<noscript>このアプリの利用には JavaScript が必要です。</noscript>
+
+<script type="module" src="./js/app.js"></script>
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", function () {
+    navigator.serviceWorker.register("./sw.js").catch(function (err) {
+      console.warn("Service Worker registration failed:", err);
+    });
+  });
+}
+</script>
+</body>
+</html>
