@@ -11,12 +11,16 @@ Android 個人用の家計簿アプリ。**iD・Vpass の決済通知を読み�
 - **完全オフライン**（INTERNET 権限なし）。マネーフォワードのような銀行 API 連携（有料）は使わず、端末に届く通知から記録する無料方式
 
 ## インストール（スマホだけで完結・PC不要）
-1. **（初回のみ・1回だけ）** GitHub で **Settings → Actions → General → Workflow permissions** を **「Read and write」** にして保存
-   （CI がビルド済み APK を Release に公開できるようにするため）
-2. **Actions** タブ → **Build APK** → 必要なら **Run workflow** で実行（`kakeibo` ブランチへの push でも自動実行）
-3. 数分後、リポジトリの **Releases**（tag: `latest`）に **`kakeibo.apk`** が出る
-4. スマホのブラウザで `kakeibo.apk` をダウンロード → インストール（初回は「提供元不明のアプリ」を許可）
-5. アプリを開き、案内に従って **「通知へのアクセス」** を許可
+ビルドは GitHub Actions で自動実行され、最新 APK は常に Releases に公開される。
+
+1. スマホのブラウザで次を開く（公開リポジトリなのでログイン不要）:
+   **https://github.com/Aoto3778/mysite/releases/download/latest/kakeibo.apk**
+   （または Releases ページ → tag `latest` → `kakeibo.apk`）
+2. ダウンロードした `kakeibo.apk` をインストール（初回は「提供元不明のアプリ」を許可）
+3. アプリを開き、案内に従って **「通知へのアクセス」** を許可
+
+> APK を作り直したいときは Actions タブ → Build APK → Run workflow（または `kakeibo` ブランチへ push）。
+> 万一 Release が更新されない場合のみ、Settings → Actions → General → Workflow permissions を「Read and write」にする。
 
 ## 取りこぼさないための設定
 - **iD**: おサイフケータイ／iD アプリの通知を ON
