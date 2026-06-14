@@ -20,21 +20,15 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Install SDK packages
-        run: yes | sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
-
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '8.11.1'
+      # ランナーにプリインストール済みの Android SDK を使う。
+      # 不足分があれば取得（無くても Gradle が自動取得するので失敗は無視）。
+      - name: Ensure Android SDK 35
+        run: yes | sdkmanager "platforms;android-35" "build-tools;35.0.0" "platform-tools" || true
 
       - name: Run unit tests and build release APK
-        run: gradle test assembleRelease --stacktrace --no-daemon
+        run: ./gradlew test assembleRelease --stacktrace --no-daemon
 
-      - name: Copy APK
+      - name: Stage APK
         run: cp app/build/outputs/apk/release/app-release.apk kakeibo.apk
 
       - name: Upload APK artifact
@@ -43,12 +37,14 @@ jobs:
           name: kakeibo-apk
           path: kakeibo.apk
 
-      - name: Publish to Release (tag: latest)
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: latest
-          name: 家計簿アプリ（最新ビルド）
-          body: |
-            iD / Vpass の決済通知を自動で記録する家計簿アプリ（個人用）。
-            スマホのブラウザでこのページの **kakeibo.apk** をダウンロードしてインストールしてください。
-          files: kakeibo.apk
+      # Release 公開には「Workflow permissions: Read and write」が必要。
+      # 未設定でもビルド成果物(Artifact)は上に残るよう、ここは失敗を無視する。
+      - name: Publish to Release (tag latest)
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create latest --title "家計簿アプリ（最新ビルド）" \
+            --notes "スマホのブラウザでこの kakeibo.apk をダウンロードしてインストールしてください。" \
+            kakeibo.apk \
+          || gh release upload latest kakeibo.apk --clobber
