@@ -39,7 +39,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     fun prevMonth() { selectedMonth = selectedMonth.minusMonths(1) }
     fun nextMonth() { selectedMonth = selectedMonth.plusMonths(1) }
 
-    fun setCaptureAll(value: Boolean) {
+    fun updateCaptureAll(value: Boolean) {
         captureAll = value
         Prefs.setCaptureAll(appContext, value)
     }

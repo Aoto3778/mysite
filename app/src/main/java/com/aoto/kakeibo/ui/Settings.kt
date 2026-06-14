@@ -99,7 +99,7 @@ fun SettingsScreen(vm: MainViewModel, modifier: Modifier = Modifier) {
                     style = MaterialTheme.typography.bodySmall
                 )
             }
-            Switch(checked = vm.captureAll, onCheckedChange = { vm.setCaptureAll(it) })
+            Switch(checked = vm.captureAll, onCheckedChange = { vm.updateCaptureAll(it) })
         }
         Spacer(Modifier.height(8.dp))
         if (raw.isNotEmpty()) {
