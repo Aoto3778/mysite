@@ -18,7 +18,8 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-fun yen(amount: Long): String = "¥%,d".format(amount)
+fun yen(amount: Long): String =
+    if (amount < 0) "-¥%,d".format(-amount) else "¥%,d".format(amount)
 
 fun monthLabel(ym: YearMonth): String = "${ym.year}年${ym.monthValue}月"
 

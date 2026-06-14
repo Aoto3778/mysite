@@ -49,31 +49,20 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         return YearMonth.of(d.year, d.monthValue)
     }
 
-    fun addManual(
-        amount: Long,
-        merchant: String?,
-        category: String,
-        timestamp: Long,
-        note: String?,
-        source: String
-    ) {
+    /** 新規（id==0）は手動入力として挿入、既存は更新する。 */
+    fun upsert(txn: TxnEntity) {
         viewModelScope.launch {
-            repo.insert(
-                TxnEntity(
-                    timestamp = timestamp,
-                    amount = amount,
-                    source = source,
-                    merchant = merchant?.ifBlank { null },
-                    category = category.ifBlank { AutoCategory.UNCLASSIFIED },
-                    note = note?.ifBlank { null },
-                    isManual = true
+            if (txn.id == 0L) {
+                repo.insert(
+                    txn.copy(
+                        isManual = true,
+                        category = txn.category.ifBlank { AutoCategory.UNCLASSIFIED }
+                    )
                 )
-            )
+            } else {
+                repo.update(txn)
+            }
         }
-    }
-
-    fun save(txn: TxnEntity) {
-        viewModelScope.launch { repo.update(txn) }
     }
 
     fun delete(id: Long) {
@@ -89,10 +78,11 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         val all = repo.getAll().sortedBy { it.timestamp }
         val fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
         fun esc(s: String?) = "\"" + (s ?: "").replace("\"", "\"\"") + "\""
-        val sb = StringBuilder("日時,種別,金額,カテゴリ,利用先,メモ\n")
+        val sb = StringBuilder("日時,区分,種別,金額,カテゴリ,利用先,メモ\n")
         for (t in all) {
             val dt = Instant.ofEpochMilli(t.timestamp).atZone(ZoneId.systemDefault()).format(fmt)
-            sb.append("$dt,${t.source},${t.amount},${esc(t.category)},${esc(t.merchant)},${esc(t.note)}\n")
+            val kind = if (t.isIncome) "収入" else "支出"
+            sb.append("$dt,$kind,${t.source},${t.amount},${esc(t.category)},${esc(t.merchant)},${esc(t.note)}\n")
         }
         return sb.toString()
     }

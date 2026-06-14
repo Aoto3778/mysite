@@ -52,7 +52,7 @@ private fun AppRoot(vm: MainViewModel = viewModel()) {
                     selected = tab == Tab.Home,
                     onClick = { tab = Tab.Home },
                     icon = { Icon(Icons.AutoMirrored.Filled.List, contentDescription = null) },
-                    label = { Text("一覧") }
+                    label = { Text("ホーム") }
                 )
                 NavigationBarItem(
                     selected = tab == Tab.Summary,
@@ -94,11 +94,7 @@ private fun AppRoot(vm: MainViewModel = viewModel()) {
             initial = current,
             onDismiss = { editor = null },
             onSave = { saved ->
-                if (saved.id == 0L) {
-                    vm.addManual(saved.amount, saved.merchant, saved.category, saved.timestamp, saved.note, saved.source)
-                } else {
-                    vm.save(saved)
-                }
+                vm.upsert(saved)
                 editor = null
             },
             onDelete = if (current.id != 0L) ({ vm.delete(current.id); editor = null }) else null

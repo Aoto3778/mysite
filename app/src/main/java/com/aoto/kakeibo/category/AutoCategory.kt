@@ -4,10 +4,16 @@ package com.aoto.kakeibo.category
 object AutoCategory {
     const val UNCLASSIFIED = "未分類"
 
+    /** 支出カテゴリ。 */
     val CATEGORIES = listOf(
         "食費", "日用品", "交通", "交際費", "趣味・娯楽",
         "衣服・美容", "水道・光熱", "通信", "医療", "教養・教育",
         "その他", UNCLASSIFIED
+    )
+
+    /** 収入カテゴリ（手動入力用）。 */
+    val INCOME_CATEGORIES = listOf(
+        "給与", "賞与", "副業", "事業", "投資", "年金", "臨時収入", "その他", UNCLASSIFIED
     )
 
     private val MAP: List<Pair<String, List<String>>> = listOf(

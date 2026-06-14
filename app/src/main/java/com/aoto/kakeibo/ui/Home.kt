@@ -25,6 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.aoto.kakeibo.MainViewModel
 import com.aoto.kakeibo.data.TxnEntity
+import com.aoto.kakeibo.stats.Stats
 import com.aoto.kakeibo.util.NotiAccess
 
 @Composable
@@ -36,25 +37,30 @@ fun HomeScreen(
 ) {
     val month = vm.selectedMonth
     val monthTxns = txns.filter { vm.monthOf(it.timestamp) == month }
-    val total = monthTxns.sumOf { it.amount }
+    val totals = Stats.totals(monthTxns)
 
     Column(modifier.fillMaxSize()) {
-        MonthHeader(monthLabel(month), total, onPrev = { vm.prevMonth() }, onNext = { vm.nextMonth() })
+        MonthHeader(monthLabel(month), onPrev = { vm.prevMonth() }, onNext = { vm.nextMonth() })
+        SummaryCards(totals.income, totals.expense)
         if (!rememberNotiGranted()) NotiBanner()
         if (monthTxns.isEmpty()) {
             EmptyHint()
         } else {
             val grouped = monthTxns.groupBy { localDateOf(it.timestamp) }
-            LazyColumn(Modifier.fillMaxSize()) {
+            LazyColumn(Modifier.weight(1f).fillMaxWidth()) {
                 grouped.forEach { (date, list) ->
-                    val dayTotal = list.sumOf { it.amount }
+                    val dayNet = list.sumOf { if (it.isIncome) it.amount else -it.amount }
                     item(key = "head-$date") {
                         Row(
                             Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text(dateLabel(list.first().timestamp), style = MaterialTheme.typography.labelLarge)
-                            Text(yen(dayTotal), style = MaterialTheme.typography.labelLarge)
+                            Text(
+                                (if (dayNet > 0) "+" else "") + yen(dayNet),
+                                style = MaterialTheme.typography.labelLarge,
+                                color = if (dayNet >= 0) IncomeColor else MaterialTheme.colorScheme.onSurface
+                            )
                         }
                     }
                     items(list, key = { it.id }) { t ->
@@ -82,7 +88,12 @@ private fun TxnRow(t: TxnEntity, onClick: () -> Unit) {
             )
             Text("${t.category}・${timeLabel(t.timestamp)}", style = MaterialTheme.typography.bodySmall)
         }
-        Text(yen(t.amount), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+        Text(
+            (if (t.isIncome) "+" else "") + yen(t.amount),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = if (t.isIncome) IncomeColor else MaterialTheme.colorScheme.onSurface
+        )
     }
 }
 
@@ -111,7 +122,7 @@ private fun EmptyHint() {
         Text("この月の記録はまだありません。", style = MaterialTheme.typography.bodyMedium)
         Spacer(Modifier.height(4.dp))
         Text(
-            "決済通知が届くと自動で追加されます。右下の ＋ から手動入力もできます。",
+            "支出は決済通知で自動追加されます。右下の ＋ から収入・支出を手動でも追加できます。",
             style = MaterialTheme.typography.bodySmall
         )
     }

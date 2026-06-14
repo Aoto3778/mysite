@@ -16,6 +16,7 @@ import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
@@ -56,15 +57,30 @@ fun EditorDialog(
     var timestamp by remember { mutableStateOf(initial.timestamp) }
     var catMenuOpen by remember { mutableStateOf(false) }
     var showDatePicker by remember { mutableStateOf(false) }
+    var isIncome by remember { mutableStateOf(initial.isIncome) }
     val isNew = initial.id == 0L
 
     Dialog(onDismissRequest = onDismiss) {
         Surface(shape = MaterialTheme.shapes.large, tonalElevation = 6.dp) {
             Column(Modifier.padding(20.dp).verticalScroll(rememberScrollState())) {
                 Text(
-                    if (isNew) "支出を追加" else "支出を編集",
+                    (if (isIncome) "収入" else "支出") + (if (isNew) "を追加" else "を編集"),
                     style = MaterialTheme.typography.titleLarge
                 )
+                Spacer(Modifier.height(16.dp))
+
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    FilterChip(
+                        selected = !isIncome,
+                        onClick = { if (isIncome) { isIncome = false; category = AutoCategory.UNCLASSIFIED } },
+                        label = { Text("支出") }
+                    )
+                    FilterChip(
+                        selected = isIncome,
+                        onClick = { if (!isIncome) { isIncome = true; category = AutoCategory.UNCLASSIFIED } },
+                        label = { Text("収入") }
+                    )
+                }
                 Spacer(Modifier.height(16.dp))
 
                 OutlinedTextField(
@@ -86,7 +102,7 @@ fun EditorDialog(
                 OutlinedTextField(
                     value = merchant,
                     onValueChange = { merchant = it },
-                    label = { Text("利用先") },
+                    label = { Text(if (isIncome) "内容（支払元など）" else "利用先") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -110,7 +126,7 @@ fun EditorDialog(
                         expanded = catMenuOpen,
                         onDismissRequest = { catMenuOpen = false }
                     ) {
-                        AutoCategory.CATEGORIES.forEach { c ->
+                        (if (isIncome) AutoCategory.INCOME_CATEGORIES else AutoCategory.CATEGORIES).forEach { c ->
                             DropdownMenuItem(
                                 text = { Text(c) },
                                 onClick = { category = c; catMenuOpen = false }
@@ -148,7 +164,13 @@ fun EditorDialog(
                                     merchant = merchant.ifBlank { null },
                                     category = category,
                                     note = note.ifBlank { null },
-                                    timestamp = timestamp
+                                    timestamp = timestamp,
+                                    isIncome = isIncome,
+                                    source = when {
+                                        isIncome -> "収入"
+                                        isNew -> "現金"
+                                        else -> initial.source
+                                    }
                                 )
                             )
                         }
