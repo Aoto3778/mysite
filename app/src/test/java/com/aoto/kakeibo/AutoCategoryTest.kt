@@ -14,6 +14,14 @@ class AutoCategoryTest {
         assertEquals("日用品", AutoCategory.guess("マツモトキヨシ", "Vpass"))
     }
 
+    @Test fun gyomuSuperBranchIsFood() {
+        assertEquals("食費", AutoCategory.guess("業務スーパー　小田原東町店", "Vpass"))
+    }
+
+    @Test fun mybBranchIsFood() {
+        assertEquals("食費", AutoCategory.guess("MYB　小田原東町店", "Vpass"))
+    }
+
     @Test fun nullMerchantIsUnclassified() {
         assertEquals(AutoCategory.UNCLASSIFIED, AutoCategory.guess(null, "iD"))
     }
