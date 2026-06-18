@@ -129,13 +129,17 @@ fun SettingsScreen(vm: MainViewModel, modifier: Modifier = Modifier) {
         }
         Spacer(Modifier.height(28.dp))
 
+        SectionTitle("分類ルール（ワード→カテゴリ）")
+        CategoryRulesSection(vm)
+        Spacer(Modifier.height(28.dp))
+
         SectionTitle("このアプリについて")
         Text(
-            "iD / Vpass の決済通知を自動で記録する個人用の家計簿です。データは端末内のみに保存され、外部へ送信されません（通信機能なし）。",
+            "Vpass の決済通知（iD の支払いを含む）を自動で記録する個人用の家計簿です。データは端末内のみに保存され、外部へ送信されません（通信機能なし）。",
             style = MaterialTheme.typography.bodySmall
         )
         Spacer(Modifier.height(4.dp))
-        Text("バージョン 1.0", style = MaterialTheme.typography.labelSmall)
+        Text("バージョン 1.2", style = MaterialTheme.typography.labelSmall)
     }
 }
 

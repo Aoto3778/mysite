@@ -17,18 +17,31 @@ object AutoCategory {
     )
 
     private val MAP: List<Pair<String, List<String>>> = listOf(
-        "食費" to listOf("コンビニ", "セブン", "ローソン", "ファミリーマート", "ファミマ", "ミニストップ", "スーパー", "マクドナルド", "すき家", "松屋", "吉野家", "スタバ", "スターバックス", "ドトール", "カフェ", "食堂", "レストラン", "イオン", "マルエツ", "ライフ", "業務スーパー", "MYB"),
-        "日用品" to listOf("ドラッグ", "マツモトキヨシ", "マツキヨ", "ウエルシア", "サンドラッグ", "ココカラ", "ダイソー", "セリア", "薬局", "ニトリ", "無印", "カインズ", "コーナン", "ホームセンター"),
+        "食費" to listOf("コンビニ", "セブン", "ローソン", "ファミリーマート", "ファミマ", "ミニストップ", "スーパー", "マクドナルド", "すき家", "松屋", "吉野家", "スタバ", "スターバックス", "ドトール", "カフェ", "食堂", "レストラン", "イオン", "マルエツ", "ライフ", "業務スーパー", "MYB", "ザ・ビッグ", "イトーヨーカドー", "ヨーカドー", "ヨークマート", "食品"),
+        "日用品" to listOf("ドラッグ", "マツモトキヨシ", "マツキヨ", "ウエルシア", "サンドラッグ", "ココカラ", "ダイソー", "セリア", "薬局", "ニトリ", "無印", "カインズ", "コーナン", "ホームセンター", "ドン・キホーテ", "ドンキホーテ", "ドンキ"),
         "交通" to listOf("JR", "メトロ", "東急", "京王", "小田急", "西武", "バス", "タクシー", "ENEOS", "出光", "コスモ", "ガソリン", "Suica", "PASMO", "ICOCA", "鉄道", "高速", "ETC", "駐車"),
-        "通信" to listOf("ドコモ", "docomo", "ソフトバンク", "SoftBank", "au", "楽天モバイル", "携帯", "プロバイダ", "Wi-Fi"),
+        "通信" to listOf("ドコモ", "docomo", "ソフトバンク", "SoftBank", "au", "楽天モバイル", "モバイル", "携帯", "プロバイダ", "Wi-Fi"),
         "水道・光熱" to listOf("電気", "ガス", "水道", "東京電力", "関西電力", "中部電力", "東京ガス", "光熱"),
-        "趣味・娯楽" to listOf("Amazon", "アマゾン", "書店", "ゲーム", "映画", "TOHO", "Steam", "Google Play", "Nintendo", "PlayStation", "Netflix", "Spotify", "カラオケ"),
-        "衣服・美容" to listOf("ユニクロ", "UNIQLO", "GU", "美容", "理容", "ZOZO", "しまむら", "コスメ", "H&M"),
+        "趣味・娯楽" to listOf("Amazon", "アマゾン", "書店", "ゲーム", "映画", "TOHO", "Steam", "Google Play", "Nintendo", "PlayStation", "Netflix", "Spotify", "カラオケ", "CRUNCHYROLL", "クランチロール"),
+        "衣服・美容" to listOf("ユニクロ", "UNIQLO", "GU", "美容", "理容", "ZOZO", "しまむら", "コスメ", "H&M", "Salon", "サロン"),
         "医療" to listOf("病院", "クリニック", "歯科", "調剤", "薬")
     )
 
-    fun guess(merchant: String?, source: String): String {
+    /**
+     * 利用先名からカテゴリを推定する。
+     * [userRules]（ワード→カテゴリ）があればビルトインより優先し、長いワードから順に照合する。
+     */
+    fun guess(
+        merchant: String?,
+        source: String,
+        userRules: List<Pair<String, String>> = emptyList()
+    ): String {
         val m = merchant ?: return UNCLASSIFIED
+        // ユーザー定義ルールを最優先（より具体的＝長いワードを先に）。
+        userRules
+            .filter { it.first.isNotBlank() }
+            .sortedByDescending { it.first.length }
+            .forEach { (kw, cat) -> if (m.contains(kw, ignoreCase = true)) return cat }
         for ((cat, keys) in MAP) {
             if (keys.any { m.contains(it, ignoreCase = true) }) return cat
         }

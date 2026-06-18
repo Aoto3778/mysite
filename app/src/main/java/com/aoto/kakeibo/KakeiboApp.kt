@@ -7,6 +7,6 @@ import com.aoto.kakeibo.data.Repository
 class KakeiboApp : Application() {
     val repository: Repository by lazy {
         val db = AppDatabase.get(this)
-        Repository(db.txnDao(), db.rawDao())
+        Repository(db.txnDao(), db.rawDao(), db.ruleDao())
     }
 }

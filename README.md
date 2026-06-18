@@ -9,6 +9,7 @@ iD（おサイフケータイ）の支払いも、後から Vpass のご利用�
 ## これは何
 - **通知連動**: **Vpass のご利用通知**を自動で記帳（支出）。iD の支払いも後から Vpass 通知として届くので、これ1本でまとめて記録する（iD 通知側は記録せず**二重計上を防ぐ**）
 - iD 決済（`iD/利用先/iD` 形式）は利用先名を取り出して通常の支出として分類（例: 業務スーパー→食費）
+- **分類ルール**: 利用先に含まれるワードを好きなカテゴリに割り当て可能（例: 「Salon」→ 衣服・美容）。以後その語を含む決済は自動分類され、未分類の既存データにも反映される
 - **収入は手動入力**。支出と収入から **収支・貯蓄率・カテゴリ別内訳（ドーナツ）・月次推移グラフ** を表示
 - 手動入力・カテゴリ分け・月ごとの集計・CSV 書き出し
 - **完全オフライン**（INTERNET 権限なし）。マネーフォワードのような銀行 API 連携（有料）は使わず、端末に届く通知から記録する無料方式
@@ -33,7 +34,7 @@ iD（おサイフケータイ）の支払いも、後から Vpass のご利用�
 ## 使い方
 - **一覧**: 月ごとの支出。自動記録された決済が並ぶ。行をタップで編集、右下の ＋ で手動追加
 - **集計**: 当月のカテゴリ別合計
-- **設定**: 通知アクセス、バッテリー最適化、CSV 書き出し、診断（未対応通知の文面確認）
+- **設定**: 通知アクセス、バッテリー最適化、CSV 書き出し、**分類ルール（ワード→カテゴリ）**、診断（未対応通知の文面確認）
 
 ## Vpass の文面調整について
 Vpass の通知文面は環境により異なることがある。うまく記録されないときは、
@@ -55,11 +56,11 @@ Vpass の通知文面は環境により異なることがある。うまく記�
 ```
 app/src/main/java/com/aoto/kakeibo/
   MainActivity.kt / MainViewModel.kt / KakeiboApp.kt
-  data/        Room（TxnEntity・RawCapture・Dao・AppDatabase・Repository）
+  data/        Room（TxnEntity・RawCapture・RuleEntity・Dao・AppDatabase・Repository）
   parse/       AmountParser（金額抽出）・Rules（Vpass ご利用通知の判定・利用先抽出）
-  category/    AutoCategory（利用先→カテゴリ推定）
+  category/    AutoCategory（利用先→カテゴリ推定。ユーザー定義ルール優先）
   noti/        NotiListenerService（通知の読み取り本体）
-  ui/          Compose 画面（一覧・集計・設定・編集）
+  ui/          Compose 画面（一覧・集計・設定・編集・分類ルール）
   util/        Prefs（設定保存）・NotiAccess（権限・設定画面）
 app/src/test/  ユニットテスト
 .github/workflows/build.yml   CI（テスト→APK ビルド→Release 公開）

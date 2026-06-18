@@ -8,6 +8,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.aoto.kakeibo.category.AutoCategory
 import com.aoto.kakeibo.data.RawCapture
+import com.aoto.kakeibo.data.RuleEntity
 import com.aoto.kakeibo.data.TxnEntity
 import com.aoto.kakeibo.util.Prefs
 import kotlinx.coroutines.flow.SharingStarted
@@ -29,6 +30,9 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     val rawCaptures: StateFlow<List<RawCapture>> =
         repo.observeRaw().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    val rules: StateFlow<List<RuleEntity>> =
+        repo.observeRules().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     var selectedMonth by mutableStateOf(YearMonth.now())
         private set
@@ -67,6 +71,20 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     fun delete(id: Long) {
         viewModelScope.launch { repo.delete(id) }
+    }
+
+    /** 「ワード→カテゴリ」ルールを追加し、既存の未分類取引にも反映する。 */
+    fun addRule(keyword: String, category: String) {
+        val kw = keyword.trim()
+        if (kw.isBlank()) return
+        viewModelScope.launch {
+            repo.upsertRule(RuleEntity(keyword = kw, category = category))
+            repo.reclassifyByKeyword(kw, category, AutoCategory.UNCLASSIFIED)
+        }
+    }
+
+    fun deleteRule(keyword: String) {
+        viewModelScope.launch { repo.deleteRule(keyword) }
     }
 
     fun clearRaw() {

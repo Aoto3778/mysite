@@ -24,7 +24,7 @@ class NotiListenerService : NotificationListenerService() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val repo: Repository by lazy {
         val db = AppDatabase.get(applicationContext)
-        Repository(db.txnDao(), db.rawDao())
+        Repository(db.txnDao(), db.rawDao(), db.ruleDao())
     }
 
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
@@ -45,13 +45,15 @@ class NotiListenerService : NotificationListenerService() {
                     parsed.source, parsed.amount, postTime - 90_000, postTime + 90_000
                 )
                 if (dup == 0) {
+                    // ユーザー定義ルールを優先して分類する。
+                    val userRules = repo.rulesSnapshot().map { it.keyword to it.category }
                     repo.insert(
                         TxnEntity(
                             timestamp = postTime,
                             amount = parsed.amount,
                             source = parsed.source,
                             merchant = parsed.merchant,
-                            category = AutoCategory.guess(parsed.merchant, parsed.source),
+                            category = AutoCategory.guess(parsed.merchant, parsed.source, userRules),
                             rawText = listOfNotNull(title, text).joinToString(" / "),
                             isManual = false
                         )
